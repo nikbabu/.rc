@@ -1,0 +1,17 @@
+#screen command settings.
+
+autodetach on
+startup_message off 
+defscrollback 5000
+defnonblock on
+vbell_msg "* ding *" 
+vbell off
+escape ``
+
+# Fix scrolling, in case we don't want to use CTRL+a [
+# Assumes xterm or a variant like OSX's xterm-color
+termcapinfo xterm* ti@:te@
+
+shelltitle "$ |bash" 
+ # Statusline (should be one-line)
+ hardstatus alwayslastline '%{gk}[ %{G}%H %{g}][%= %{wk}%?%-Lw%?%{=b kR}[%{W}%n%f %t%?(%u)%?%{=b kR}]%{= kw}%?%+Lw%?%?%= %{g}][%{Y}%l%{g}]%{=b C}[ %D %m/%d %C%a ]%{W}'
