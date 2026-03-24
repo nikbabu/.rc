@@ -1,0 +1,67 @@
+#!/usr/bin/tcsh
+# Wrapper script for 'g' alias that checks file size and uses nc for large files
+
+# echo "[DEBUG] Script started"
+# echo "[DEBUG] Number of arguments: $#argv"
+# echo "[DEBUG] Arguments: $*"
+
+# If no arguments, just open editor
+if ( $#argv == 0 ) then
+  # echo "[DEBUG] No arguments, opening editor"
+  if ( $?VNCDESKTOP || $?ZELLIJ ) then
+    gvim
+  else
+    vim
+  endif
+  exit 0
+endif
+
+# echo "[DEBUG] Checking VOVARCH..."
+if ( $?VOVARCH ) then
+  # echo "[DEBUG] VOVARCH is set"
+  :
+else
+  # echo "[DEBUG] VOVARCH not set, loading module"
+  module add nc/2024.1.0 || true 
+endif
+
+# Check if argument is a file and get its size
+set file = "$1"
+# echo "[DEBUG] File argument: $file"
+
+if ( -f "$file" ) then
+  # echo "[DEBUG] File exists, checking size..."
+  set fsize = `wc -c < "$file"`
+  # echo "[DEBUG] File size: $fsize"
+  set max_size = 524288000  # 500MB in bytes
+  # echo "[DEBUG] Max size: $max_size"
+  
+  # echo "[DEBUG] About to compare: $fsize > $max_size"
+  if ( `expr $fsize \> $max_size` ) then
+    # echo "[DEBUG] File is larger than 500MB, using nc"
+    # File is larger than 500MB, use nc
+    ##module add nc/2024.1.0 2>/dev/null || true
+    if ( $?VOVARCH ) then
+      nc run -I -C sim gvim $argv
+
+    else 
+      /usr/hw-tools/NC/2024.1.0/linux64/scripts/nc run -I -C sim gvim $argv
+    endif
+  else
+    # File is smaller, use regular editor
+    # echo "[DEBUG] File is smaller than 500MB, opening in vim"
+    if ( $?VNCDESKTOP || $?ZELLIJ ) then
+      gvim $argv
+    else
+      vim $argv
+    endif
+  endif
+else
+  # Not a file, use regular editor (for new files or directories)
+  # echo "[DEBUG] Not a file or file doesn't exist, opening in vim"
+  if ( $?VNCDESKTOP || $?ZELLIJ ) then
+    gvim $argv
+  else
+    vim $argv
+  endif
+endif
